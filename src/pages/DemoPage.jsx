@@ -3,6 +3,77 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { SimpleTooltip } from "../components/ui/Tooltip";
 import { SEO } from "../components/seo";
+// Load MediaPipe using dynamic imports with error handling
+const loadMediaPipe = async () => {
+  try {
+    // Dynamic import from node_modules
+    const handsModule = await import("@mediapipe/hands");
+    const drawingUtilsModule = await import("@mediapipe/drawing_utils");
+
+    // Handle different export formats
+    const Hands = handsModule.Hands || handsModule.default?.Hands;
+    const HAND_CONNECTIONS =
+      handsModule.HAND_CONNECTIONS || handsModule.default?.HAND_CONNECTIONS;
+    const drawConnectors =
+      drawingUtilsModule.drawConnectors ||
+      drawingUtilsModule.default?.drawConnectors;
+    const drawLandmarks =
+      drawingUtilsModule.drawLandmarks ||
+      drawingUtilsModule.default?.drawLandmarks;
+
+    if (!Hands || !HAND_CONNECTIONS || !drawConnectors || !drawLandmarks) {
+      throw new Error("MediaPipe modules not properly exported");
+    }
+
+    return {
+      Hands,
+      HAND_CONNECTIONS,
+      drawConnectors,
+      drawLandmarks,
+    };
+  } catch (error) {
+    console.error("Error loading MediaPipe:", error);
+    // Try CDN fallback
+    try {
+      const handsUrl =
+        "https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469404/hands.js";
+      const drawingUrl =
+        "https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js";
+
+      // Inject script tags as fallback
+      const loadScript = (url) => {
+        return new Promise((resolve, reject) => {
+          if (document.querySelector(`script[src="${url}"]`)) {
+            resolve();
+            return;
+          }
+          const script = document.createElement("script");
+          script.src = url;
+          script.type = "module";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      };
+
+      await Promise.all([loadScript(handsUrl), loadScript(drawingUrl)]);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (window.Hands && window.HAND_CONNECTIONS) {
+        return {
+          Hands: window.Hands,
+          HAND_CONNECTIONS: window.HAND_CONNECTIONS,
+          drawConnectors: window.drawConnectors,
+          drawLandmarks: window.drawLandmarks,
+        };
+      }
+    } catch (cdnError) {
+      console.error("CDN fallback also failed:", cdnError);
+    }
+
+    throw new Error("Failed to load MediaPipe. Please refresh the page.");
+  }
+};
 
 // Default settings values
 const DEFAULT_SETTINGS = {
@@ -261,8 +332,8 @@ function SettingsModal({ isOpen, onClose }) {
   );
 }
 
-// Video feed component with real-time camera
-function VideoFeed({ videoRef, isCameraActive, error, onRetry }) {
+// Video feed component with real-time camera and hand landmark detection
+function VideoFeed({ videoRef, isCameraActive, error, onRetry, canvasRef }) {
   return (
     <div
       className={`relative rounded-xl overflow-hidden bg-black transition-colors ${
@@ -279,6 +350,12 @@ function VideoFeed({ videoRef, isCameraActive, error, onRetry }) {
         muted
         className="w-full aspect-video object-cover"
         style={{ transform: "scaleX(-1)" }}
+      />
+
+      {/* Canvas overlay for hand landmarks */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
       />
 
       {/* Camera off state */}
@@ -330,13 +407,6 @@ function VideoFeed({ videoRef, isCameraActive, error, onRetry }) {
           </button>
         </div>
       )}
-
-      {/* Detection overlay - placeholder for ML detection results */}
-      {isCameraActive && (
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Hand detection boxes and landmarks would be rendered here */}
-        </div>
-      )}
     </div>
   );
 }
@@ -354,7 +424,11 @@ function ControlButtons({
     <div className="flex items-center gap-2">
       {/* Camera toggle */}
       <SimpleTooltip
-        content={isCameraActive ? "Turn off camera" : "Turn on camera"}
+        content={
+          isCameraActive
+            ? "Turn off camera (Press S)"
+            : "Turn on camera (Press S)"
+        }
         position="bottom"
       >
         <button
@@ -490,6 +564,30 @@ function ControlButtons({
           </svg>
         </button>
       </SimpleTooltip>
+
+      {/* Report Issue */}
+      <SimpleTooltip content="Report Issue" position="bottom">
+        <a
+          href="https://github.com/Phal-Sovandy/Khmer-Sign-Language-Translation-System/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+            />
+          </svg>
+        </a>
+      </SimpleTooltip>
     </div>
   );
 }
@@ -592,13 +690,124 @@ function DetectedTextArea({
 
 export default function DemoPage() {
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const handsRef = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [detectedText, setDetectedText] = useState(
-    "សួស្តីខ្ញុំឈ្មោះវាន់ វាត់ ខ្ញុំមានអាយុ ១២ឆ្នាំ"
+    "សួស្តីខ្ញុំឈ្មោះវ៉ាន់ វាត់ ខ្ញុំមានអាយុ ១២ឆ្នាំ"
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Initialize MediaPipe Hands
+  const initializeHands = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    try {
+      // Load MediaPipe modules
+      const { Hands, HAND_CONNECTIONS, drawConnectors, drawLandmarks } =
+        await loadMediaPipe();
+
+      // Clean up existing hands instance
+      if (handsRef.current) {
+        handsRef.current.close();
+      }
+
+      const hands = new Hands({
+        locateFile: (file) => {
+          return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        },
+      });
+
+      hands.setOptions({
+        maxNumHands: 2,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
+
+      // Store drawing functions in closure
+      const drawHands = (results) => {
+        if (!canvasRef.current || !videoRef.current) return;
+
+        const canvasCtx = canvasRef.current.getContext("2d");
+        const video = videoRef.current;
+
+        // Set canvas dimensions to match video
+        if (video.videoWidth && video.videoHeight) {
+          canvasRef.current.width = video.videoWidth;
+          canvasRef.current.height = video.videoHeight;
+        }
+
+        // Clear canvas
+        canvasCtx.save();
+        canvasCtx.clearRect(
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+
+        // Mirror the canvas context to match the mirrored video
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasRef.current.width, 0);
+
+        // Draw hand landmarks
+        if (results.multiHandLandmarks) {
+          for (const landmarks of results.multiHandLandmarks) {
+            // Draw connections (hand skeleton)
+            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+              color: "#ffffff",
+              lineWidth: 3,
+            });
+            // Draw landmarks (hand joints)
+            drawLandmarks(canvasCtx, landmarks, {
+              color: "#0BA6DF",
+              lineWidth: 1,
+              radius: 5,
+            });
+          }
+        }
+
+        canvasCtx.restore();
+      };
+
+      hands.onResults(drawHands);
+
+      handsRef.current = hands;
+
+      // Process video frames
+      const processFrame = async () => {
+        if (
+          videoRef.current &&
+          handsRef.current &&
+          videoRef.current.readyState === 4
+        ) {
+          try {
+            await handsRef.current.send({ image: videoRef.current });
+          } catch (error) {
+            console.error("Error processing frame:", error);
+          }
+        }
+        if (isCameraActive) {
+          requestAnimationFrame(processFrame);
+        }
+      };
+
+      // Start processing frames when video is ready
+      if (videoRef.current.readyState >= 2) {
+        processFrame();
+      } else {
+        videoRef.current.addEventListener("loadeddata", () => {
+          processFrame();
+        });
+      }
+    } catch (error) {
+      console.error("Error initializing MediaPipe Hands:", error);
+      setCameraError("Failed to initialize hand detection");
+    }
+  }, [isCameraActive]);
 
   // Start camera
   const startCamera = useCallback(async () => {
@@ -614,21 +823,64 @@ export default function DemoPage() {
         videoRef.current.srcObject = stream;
         setIsCameraActive(true);
         setCameraError(null);
+
+        // Wait for video to be ready, then initialize hands
+        const handleLoadedMetadata = () => {
+          // Small delay to ensure video is fully ready
+          setTimeout(() => {
+            initializeHands();
+          }, 100);
+          videoRef.current.removeEventListener(
+            "loadedmetadata",
+            handleLoadedMetadata
+          );
+        };
+
+        videoRef.current.addEventListener(
+          "loadedmetadata",
+          handleLoadedMetadata
+        );
+
+        // If already loaded
+        if (videoRef.current.readyState >= 2) {
+          handleLoadedMetadata();
+        }
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
       setCameraError(err.message);
       setIsCameraActive(false);
     }
-  }, []);
+  }, [initializeHands]);
 
   // Stop camera
   const stopCamera = useCallback(() => {
+    // Clean up MediaPipe hands
+    if (handsRef.current) {
+      handsRef.current.close();
+      handsRef.current = null;
+    }
+
+    // Stop video stream
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = videoRef.current.srcObject.getTracks();
       tracks.forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
+
+    // Clear canvas
+    if (canvasRef.current) {
+      const canvasCtx = canvasRef.current.getContext("2d");
+      if (canvasCtx) {
+        canvasCtx.clearRect(
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+      }
+    }
+
     setIsCameraActive(false);
   }, []);
 
@@ -671,11 +923,42 @@ export default function DemoPage() {
     setIsSpeaking(false);
   }, []);
 
+  // Keyboard shortcut for toggling camera (S key)
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Only trigger if not typing in an input field
+      if (
+        event.target.tagName === "INPUT" ||
+        event.target.tagName === "TEXTAREA" ||
+        event.target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Press 'S' or 's' to toggle camera
+      if (event.key === "s" || event.key === "S") {
+        event.preventDefault();
+        toggleCamera();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [toggleCamera]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopCamera();
       window.speechSynthesis.cancel();
+
+      // Clean up hands instance
+      if (handsRef.current) {
+        handsRef.current.close();
+        handsRef.current = null;
+      }
     };
   }, [stopCamera]);
 
@@ -694,6 +977,7 @@ export default function DemoPage() {
         {/* Video Feed */}
         <VideoFeed
           videoRef={videoRef}
+          canvasRef={canvasRef}
           isCameraActive={isCameraActive}
           error={cameraError}
           onRetry={startCamera}

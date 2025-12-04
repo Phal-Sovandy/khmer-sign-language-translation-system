@@ -5,6 +5,10 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    exclude: ["@mediapipe/hands", "@mediapipe/drawing_utils"],
+    include: [],
+  },
   build: {
     rollupOptions: {
       output: {
@@ -15,6 +19,10 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 1000,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
   },
   publicDir: "public",
 });

@@ -53,7 +53,7 @@ function DemoCard({ copied }) {
 
         {/* QR Code Placeholder */}
         <div className="flex flex-col items-center gap-1 sm:gap-2">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 bg-white rounded-lg p-1.5 sm:p-2 md:p-2.5 flex items-center justify-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 bg-r rounded-lg p-1.5 sm:p-2 md:p-2.5 flex items-center justify-center">
             {/* QR Code Pattern */}
             <MediaWrapper src={demoQr} alt="QR Code for demo" />
           </div>
