@@ -22,7 +22,9 @@ CORS(app, resources={r"/*": {
         "http://127.0.0.1:5000",
         "http://localhost:5000",
         "http://127.0.0.1:5173",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
     ]
 }})
 
@@ -30,7 +32,7 @@ CORS(app, resources={r"/*": {
 # -------------------------
 # Config
 # -------------------------
-MODEL_PATH = Path("./model/model_0.pth")
+MODEL_PATH = Path(__file__).parent / "model" / "model_0.pth"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # -------------------------
@@ -140,4 +142,4 @@ def predict_image():
 # -------------------------
 if __name__ == "__main__":
     print("✅ Starting Flask server...")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=3000, debug=True)

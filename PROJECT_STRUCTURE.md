@@ -5,70 +5,100 @@ This document describes the organization of the Sign Language Translation System
 ## Directory Structure
 
 ```
-src/
-├── assets/                    # Static assets (images, fonts, videos)
-│   ├── fonts/                 # Font files (Inter, Lexend, JetBrains Mono, etc.)
-│   ├── images/                # Image files (organized by type)
-│   │   ├── dataset/          # Dataset showcase images
-│   │   ├── how-it-work/      # How it works illustrations
-│   │   ├── misc/             # Miscellaneous images
-│   │   ├── signs/            # Sign language gesture images
-│   │   ├── story/             # Story section images
-│   │   ├── team/              # Team member photos
-│   │   ├── about-cover.webp
-│   │   ├── demo-qr.webp
-│   │   ├── favicon.png
-│   │   └── wall_break.webp
-│   └── videos/               # Video files
-│       ├── about-cover.mp4
-│       └── breaking_wall.mp4
+Sign Language Translation System - Web/
+├── backend/                      # Python Flask Backend
+│   ├── model/                   # Trained ML model files
+│   │   ├── model_0.pth
+│   │   ├── model_1.pth
+│   │   └── model_3.pth
+│   ├── templates/               # HTML templates
+│   │   └── index.html
+│   ├── server.py                # Flask server application
+│   ├── requirements.txt         # Python dependencies
+│   ├── README.md                # Backend documentation
+│   └── .gitignore               # Backend-specific gitignore
 │
-├── components/                # Reusable React components
-│   ├── layout/                # Layout components
-│   │   ├── Footer.jsx        # Site footer
-│   │   └── Header.jsx        # Site header/navigation
-│   ├── seo/                   # SEO components
-│   │   ├── SEO.jsx           # Dynamic SEO meta tags component
-│   │   └── index.js          # Centralized exports
-│   ├── ui/                    # UI components
-│   │   ├── MediaWrapper.jsx  # Media loading wrapper
-│   │   ├── Tooltip.jsx        # Tooltip component
-│   │   └── index.jsx          # Centralized exports
-│   ├── visuals/               # Visual/decoration components
-│   │   ├── BackgroundGrid.jsx # Background grid pattern
-│   │   ├── DatasetCollage.jsx # Dataset image collage
-│   │   ├── LogoLoop.jsx       # Logo animation loop
-│   │   └── TitledCard.jsx     # 3D tilted card component
-│   └── ScrollToTop.jsx        # Scroll to top utility component
+├── public/                       # Static public assets
+│   ├── favicon.png
+│   ├── manifest.json
+│   ├── robots.txt
+│   └── sitemap.xml
 │
-├── config/                    # Configuration files
-│   ├── changelog.js           # Changelog data
-│   ├── emailjs.js             # EmailJS configuration
-│   ├── hero.js                # Hero section content
-│   ├── socialLinks.jsx        # Social media links
-│   ├── team.js                # Team member data
-│   └── index.js               # Centralized exports
-│
-├── constants/                  # Application constants
-│   ├── routes.js              # Route paths
-│   └── index.js               # Centralized exports
-│
-├── hooks/                      # Custom React hooks
-│   ├── useActiveSection.js    # Active section tracking hook
-│   ├── useScrollPosition.js   # Scroll position tracking hook
-│   └── index.js               # Centralized exports
-│
-├── pages/                       # Page components
-│   ├── AboutPage.jsx          # About page
-│   ├── ChangelogPage.jsx      # Changelog page
-│   ├── ContactPage.jsx        # Contact page
-│   ├── DemoPage.jsx           # Demo/translation page
-│   └── DocumentationPage.jsx  # Documentation page
-│
-├── routes/                      # Routing configuration
-│   └── index.jsx               # AppRoutes component with lazy loading
-│
-├── sections/                    # Page sections/components
+├── src/                          # React Frontend Application
+│   ├── assets/                    # Static assets (images, fonts, videos)
+│   │   ├── fonts/                 # Font files (Inter, Lexend, JetBrains Mono, etc.)
+│   │   ├── images/                # Image files (organized by type)
+│   │   │   ├── dataset/          # Dataset showcase images
+│   │   │   ├── how-it-work/      # How it works illustrations
+│   │   │   ├── misc/             # Miscellaneous images
+│   │   │   ├── signs/            # Sign language gesture images
+│   │   │   ├── story/             # Story section images
+│   │   │   ├── team/              # Team member photos
+│   │   │   ├── about-cover.webp
+│   │   │   ├── demo-qr.webp
+│   │   │   ├── favicon.png
+│   │   │   └── wall_break.webp
+│   │   └── videos/               # Video files
+│   │       ├── about-cover.mp4
+│   │       └── breaking_wall.mp4
+│   │
+│   ├── components/                # Reusable React components
+│   │   ├── layout/                # Layout components
+│   │   │   ├── Footer.jsx        # Site footer
+│   │   │   └── Header.jsx        # Site header/navigation
+│   │   ├── seo/                   # SEO components
+│   │   │   ├── SEO.jsx           # Dynamic SEO meta tags component
+│   │   │   └── index.js          # Centralized exports
+│   │   ├── ui/                    # UI components
+│   │   │   ├── MediaWrapper.jsx  # Media loading wrapper
+│   │   │   ├── Tooltip.jsx        # Tooltip component
+│   │   │   └── index.jsx          # Centralized exports
+│   │   ├── visuals/               # Visual/decoration components
+│   │   │   ├── BackgroundGrid.jsx # Background grid pattern
+│   │   │   ├── DatasetCollage.jsx # Dataset image collage
+│   │   │   ├── LogoLoop.jsx       # Logo animation loop
+│   │   │   └── TitledCard.jsx     # 3D tilted card component
+│   │   ├── demo/                  # Demo page components (shared)
+│   │   │   ├── VideoFeedSection.jsx    # Video feed with MediaPipe landmarks
+│   │   │   ├── DetectedTextSection.jsx  # Detected text display area
+│   │   │   ├── SettingsModalSection.jsx # Settings modal
+│   │   │   ├── ControlButtons.jsx       # Control buttons (camera, settings, etc.)
+│   │   │   ├── hooks/              # Demo-specific hooks
+│   │   │   │   ├── useMediaPipeHands.js    # MediaPipe Hands integration hook
+│   │   │   │   └── index.js
+│   │   │   └── index.js
+│   │   └── ScrollToTop.jsx        # Scroll to top utility component
+│   │
+│   ├── config/                    # Configuration files
+│   │   ├── changelog.js           # Changelog data
+│   │   ├── emailjs.js             # EmailJS configuration
+│   │   ├── hero.js                # Hero section content
+│   │   ├── socialLinks.jsx        # Social media links
+│   │   ├── team.js                # Team member data
+│   │   └── index.js               # Centralized exports
+│   │
+│   ├── constants/                  # Application constants
+│   │   ├── routes.js              # Route paths
+│   │   └── index.js               # Centralized exports
+│   │
+│   ├── hooks/                      # Custom React hooks
+│   │   ├── useActiveSection.js    # Active section tracking hook
+│   │   ├── useScrollPosition.js   # Scroll position tracking hook
+│   │   └── index.js               # Centralized exports
+│   │
+│   ├── pages/                       # Page components
+│   │   ├── AboutPage.jsx           # About page
+│   │   ├── ChangelogPage.jsx       # Changelog page
+│   │   ├── ContactPage.jsx         # Contact page
+│   │   ├── DocumentationPage.jsx    # Documentation page
+│   │   └── demo/                   # Demo/translation page
+│   │       ├── DemoPage.jsx        # Main demo page component
+│   │       └── index.js
+│   │
+│   ├── routes/                      # Routing configuration
+│   │   └── index.jsx               # AppRoutes component with lazy loading
+│   │
+│   ├── sections/                    # Page sections/components
 │   ├── about/                   # About page sections
 │   │   ├── AboutHero.jsx
 │   │   ├── AboutStats.jsx
@@ -83,8 +113,8 @@ src/
 │   ├── contact/                 # Contact sections
 │   │   ├── ContactSection.jsx
 │   │   └── index.jsx
-│   ├── demo/                    # Demo sections
-│   │   ├── TryDemoSection.jsx
+│   ├── demo/                    # Demo sections (shared)
+│   │   ├── TryDemoSection.jsx  # Shared demo section for homepage
 │   │   └── index.jsx
 │   ├── documentation/           # Documentation sections
 │   │   ├── components/          # Documentation-specific components
@@ -141,29 +171,63 @@ src/
 │   └── workflow/                # Workflow sections
 │       ├── WorkflowSection.jsx
 │       └── index.jsx
+│   │
+│   ├── styles/                      # Global styles
+│   │   └── fonts.css                # Font definitions and imports
+│   │
+│   ├── utils/                       # Utility functions
+│   │   ├── date.js                 # Date formatting utilities
+│   │   ├── scroll.js               # Scroll utilities
+│   │   └── index.js                # Centralized exports
+│   │
+│   ├── App.jsx                      # Main app component (homepage)
+│   ├── index.css                    # Global CSS and Tailwind imports
+│   └── main.jsx                     # Application entry point
 │
-├── styles/                      # Global styles
-│   └── fonts.css                # Font definitions and imports
-│
-├── utils/                       # Utility functions
-│   ├── date.js                 # Date formatting utilities
-│   ├── scroll.js               # Scroll utilities
-│   └── index.js                # Centralized exports
-│
-├── App.jsx                      # Main app component (homepage)
-├── index.css                    # Global CSS and Tailwind imports
-└── main.jsx                     # Application entry point
+├── package.json                 # Frontend dependencies
+├── package-lock.json            # Locked dependency versions
+├── vite.config.js               # Vite build configuration
+├── tailwind.config.js           # Tailwind CSS configuration
+├── vercel.json                  # Vercel deployment configuration
+├── index.html                   # HTML entry point
+├── .env.example                 # Environment variables template
+├── .gitignore                   # Git ignore rules
+├── .vercelignore                # Vercel ignore rules
+├── README.md                    # Main project documentation
+└── PROJECT_STRUCTURE.md         # This file
 ```
+
+## Backend Structure
+
+The backend is a Flask application that provides the ML model inference API.
+
+### Backend Components
+
+- **server.py**: Main Flask application with routes and ML model integration
+- **model/**: Contains trained PyTorch model files (.pth)
+- **templates/**: HTML templates for server-rendered pages
+- **requirements.txt**: Python package dependencies
+
+### Backend API Endpoints
+
+- `GET /`: Serves the index page
+- `POST /predict_image`: Receives base64-encoded images and returns sign language predictions
+
+### Backend Setup
+
+See [backend/README.md](./backend/README.md) for detailed setup instructions.
 
 ## Key Principles
 
-1. **Separation of Concerns**: Components, utilities, configs, and pages are clearly separated
-2. **Reusability**: Common utilities and hooks are extracted for reuse
-3. **Centralized Configuration**: Config files are organized and exported from index files
-4. **Consistent Naming**: Files follow consistent naming conventions (PascalCase for components, camelCase for utilities)
-5. **Modular Structure**: Each feature/section has its own folder with its own components and config
-6. **Component Organization**: Components are grouped by purpose (layout, ui, visuals, seo)
-7. **Lazy Loading**: Pages are lazy-loaded for better performance
+1. **Backend/Frontend Separation**: Backend (Python/Flask) and frontend (React) are completely separated into different folders
+2. **Separation of Concerns**: Components, utilities, configs, and pages are clearly separated
+3. **Reusability**: Common utilities and hooks are extracted for reuse
+4. **Centralized Configuration**: Config files are organized and exported from index files
+5. **Consistent Naming**: Files follow consistent naming conventions (PascalCase for components, camelCase for utilities)
+6. **Modular Structure**: Each feature/section has its own folder with its own components and config
+7. **Component Organization**: Components are grouped by purpose (layout, ui, visuals, seo, demo)
+8. **Shared Components**: Demo page components are in `components/demo/` for reusability, while page logic stays in `pages/demo/`
+9. **Lazy Loading**: Pages are lazy-loaded for better performance
 
 ## Component Categories
 
@@ -196,6 +260,19 @@ Each section in `sections/` follows a consistent pattern:
 - Sub-components in `components/` folder (if needed)
 - Configuration in `config/` folder (if needed)
 - `index.js` for centralized exports
+
+### Demo Page Structure
+
+The demo page uses components from `components/demo/`:
+
+- **pages/demo/DemoPage.jsx**: Main page component with camera and state management
+- **components/demo/**: Demo page components (shared/reusable)
+  - **VideoFeedSection.jsx**: Video feed with real-time MediaPipe hand landmarks
+  - **DetectedTextSection.jsx**: Text display area with copy functionality
+  - **SettingsModalSection.jsx**: Settings modal for demo configuration
+  - **ControlButtons.jsx**: Control buttons (camera toggle, settings, speak, reset)
+  - **hooks/**: Demo-specific hooks
+    - **useMediaPipeHands.js**: Custom hook for MediaPipe Hands integration and landmark rendering
 
 ### Documentation Section Structure
 
@@ -237,10 +314,15 @@ import { heroCopy } from "../config";
 
 ### Adding a New Page
 
-1. Create component in `pages/` (e.g., `NewPage.jsx`)
-2. Add route to `routes/index.jsx` with lazy loading
-3. Add SEO component with appropriate title and keywords
-4. Update navigation in `components/layout/Header.jsx` if needed
+1. Create folder in `pages/[page-name]/` (e.g., `pages/new-page/`)
+2. Create main page component (e.g., `NewPage.jsx`)
+3. Create `index.js` for clean exports
+4. If components are reusable across pages, add them to `components/[feature-name]/` instead of page-specific folders
+5. If components are truly page-specific, you can add them in `components/[page-name]/` for organization
+6. Add page-specific hooks in `components/[feature-name]/hooks/` if they're reusable, or in a shared `hooks/` folder
+7. Add route to `routes/index.jsx` with lazy loading
+8. Add SEO component with appropriate title and keywords
+9. Update navigation in `components/layout/Header.jsx` if needed
 
 ### Adding a New Section
 
