@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import { SimpleTooltip } from "../components/ui/Tooltip";
-import { SettingsModal,VideoFeed, ControlButtons, DetectedTextArea} from "./function.jsx";
+import Header from "../../components/layout/Header";
+import Footer from "../../components/layout/Footer";
+import {
+  VideoFeedSection,
+  DetectedTextSection,
+  SettingsModalSection,
+} from "../../components/demo";
 
 export default function DemoPage() {
   const videoRef = useRef(null);
@@ -15,7 +18,11 @@ export default function DemoPage() {
   const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -31,7 +38,7 @@ export default function DemoPage() {
 
   const stopCamera = useCallback(() => {
     if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
     setIsCameraActive(false);
@@ -44,7 +51,10 @@ export default function DemoPage() {
   const speakText = useCallback(() => {
     if (!detectedText) return;
     window.speechSynthesis.cancel();
-    if (isSpeaking) { setIsSpeaking(false); return; }
+    if (isSpeaking) {
+      setIsSpeaking(false);
+      return;
+    }
     const utterance = new SpeechSynthesisUtterance(detectedText);
     utterance.lang = "km-KH";
     utterance.rate = 0.9;
@@ -67,6 +77,25 @@ export default function DemoPage() {
     };
   }, [stopCamera]);
 
+  // Keyboard shortcut: 's' to toggle camera
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Only trigger if not typing in an input/textarea
+      if (
+        e.key === "s" &&
+        e.target.tagName !== "INPUT" &&
+        e.target.tagName !== "TEXTAREA" &&
+        !e.target.isContentEditable
+      ) {
+        e.preventDefault();
+        toggleCamera();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [toggleCamera]);
+
   // 🔗 Auto-capture loop
   useEffect(() => {
     let intervalId;
@@ -80,20 +109,22 @@ export default function DemoPage() {
           ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
           const dataURL = canvas.toDataURL("image/jpeg");
 
-          fetch("http://127.0.0.1:5000/predict_image", {
+          fetch("http://127.0.0.1:3000/predict_image", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ image: dataURL }),
           })
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
               if (data.label) {
-                setDetectedText(`${data.label} (${data.confidence.toFixed(1)}%)`);
+                setDetectedText(
+                  `${data.label} (${data.confidence.toFixed(1)}%)`
+                );
               } else if (data.error) {
                 setDetectedText("No hand detected");
               }
             })
-            .catch(err => console.error("Prediction error:", err));
+            .catch((err) => console.error("Prediction error:", err));
         }
       }, 1000);
     }
@@ -104,8 +135,13 @@ export default function DemoPage() {
     <div className="min-h-screen bg-brand-background overflow-x-clip">
       <Header showDemoButton={false} />
       <main className="px-8 pt-28 pb-16 max-w-[1200px] mx-auto">
-        <VideoFeed videoRef={videoRef} isCameraActive={isCameraActive} error={cameraError} onRetry={startCamera} />
-        <DetectedTextArea
+        <VideoFeedSection
+          videoRef={videoRef}
+          isCameraActive={isCameraActive}
+          error={cameraError}
+          onRetry={startCamera}
+        />
+        <DetectedTextSection
           text={detectedText}
           isCameraActive={isCameraActive}
           onToggleCamera={toggleCamera}
@@ -116,7 +152,10 @@ export default function DemoPage() {
         />
       </main>
       <Footer />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModalSection
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

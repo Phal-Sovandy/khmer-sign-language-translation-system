@@ -4,7 +4,7 @@ import ScrollToTop from "../components/ScrollToTop";
 
 // Lazy load pages for better performance
 const App = lazy(() => import("../App"));
-const DemoPage = lazy(() => import("../pages/DemoPage"));
+const DemoPage = lazy(() => import("../pages/demo"));
 const AboutPage = lazy(() => import("../pages/AboutPage"));
 const DocumentationPage = lazy(() => import("../pages/DocumentationPage"));
 const ChangelogPage = lazy(() => import("../pages/ChangelogPage"));
