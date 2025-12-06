@@ -29,7 +29,7 @@ CORS(app, resources={r"/*": {
 # -------------------------
 # Config
 # -------------------------
-MODEL_PATH = Path("./model/model_epoch8_val0.8148.pth")
+MODEL_PATH = Path("./model/model_epoch9_val0.7953.pth")
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # -------------------------
@@ -149,10 +149,10 @@ def predict_image():
             label, conf = predict(results.multi_hand_landmarks)
 
         
-            if label != SET_HAND[0]:
-                update_set_hand(label, SET_HAND)
+            # if label != SET_HAND[0]:
+            #     update_set_hand(label, SET_HAND)
 
-            label = return_text(SET_HAND)
+            # label = return_text(SET_HAND)
 
             # Take **first hand** landmarks for drawing in JS
             hand_landmarks = results.multi_hand_landmarks[0]
