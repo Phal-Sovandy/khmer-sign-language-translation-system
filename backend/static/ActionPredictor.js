@@ -34,21 +34,33 @@ export class ActionPredictor {
     actionSetToText(actionSet) {
         if (!this.converts) return null;
 
-        const cleanSet = new Set(actionSet);
-        let lastMatch = null;
+        let bestMatch = "";
+        let bestLength = 0;
+
+        // Helper to check if target is a subsequence of arr
+        const isSubsequence = (arr, target) => {
+            let i = 0;
+            for (let t of target) {
+                while (i < arr.length && arr[i] !== t) i++;
+                if (i === arr.length) return false;
+                i++;
+            }
+            return true;
+        };
 
         for (const [text, actions] of Object.entries(this.converts)) {
-            const actionClean = new Set(actions.filter(a => a));
-
-            // Check if every item in cleanSet exists in actionClean
-            const isSubset = [...cleanSet].every(a => actionClean.has(a));
-
-            if (isSubset) {
-                lastMatch = text; // store last matching text
+            const filteredActions = actions.filter(a => a); // remove falsy values
+            if (isSubsequence(actionSet, filteredActions)) {
+                // pick the largest matching sequence
+                if (filteredActions.length > bestLength) {
+                    bestLength = filteredActions.length;
+                    bestMatch = text;
+                }
             }
         }
 
-        return lastMatch; // return last matched text or null
+        return bestMatch || null; // return null if no match
     }
+
 
 }
