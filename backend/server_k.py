@@ -30,7 +30,7 @@ CORS(app, resources={r"/*": {
 # -------------------------
 # Config
 # -------------------------
-MODEL_PATH = Path("./model/model_epoch10_val0.8827.pth")
+MODEL_PATH = Path("./model/model_epoch35_val0.8642.pth")
 CONVERTS_PATH = Path("./converts.json")
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
